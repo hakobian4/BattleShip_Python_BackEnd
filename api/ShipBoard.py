@@ -5,6 +5,7 @@ import numpy as np
 class Ship_Board():
     def __init__(self):
         self.board = None
+        self.ships_count = [4, 3, 2, 1]
 
     def set_ships_board(self, row, col, direction, ship_size):
         """
@@ -111,13 +112,15 @@ class Ship_Board():
     def get_available_directions(self, row, col, ship_size):
         """
             This method checks all available directions for the given ship and returns the list of that directions.
-            The given ship can only be 2 or 3 valued ship.
+            The given ship can only be 2, 3 or 4 valued ship.
         """
 
         directions = []
 
         line1 = ship_size
-        if ship_size == 3:
+        if ship_size == 4:
+            line2 = 8
+        elif ship_size == 3:
             line2 = 9
         else:
             line2 = 10
@@ -195,6 +198,35 @@ class Ship_Board():
                 directions = [1, 4]
         
         return directions
+
+
+    def deleting_board(self):
+        self.board = np.zeros([12, 12])
+        self.ships_count = [4, 3, 2, 1]
+        return self.board[1 : -1, 1 : -1].tolist()
+
+
+    def set_ship_with_hand(self, row, col, direction, ship_size):
+        """
+        Ads
+        """ 
+        if self.ships_count[ship_size - 1] > 0:
+            if ship_size == 1:
+                self.set_single_ships(row, col)
+            else:
+                directions = self.get_available_directions(row, col, ship_size)
+                if direction in directions:
+                    self.set_ships_board(row, col, direction, ship_size)
+                    self.ships_count[ship_size - 1] -= 1
+                    if (self.ships_count[0] == 0) and (self.ships_count[1] == 0) and (self.ships_count[2] == 0) and (self.ships_count[3] == 0):
+                        self.board = self.board[1 : -1, 1 : -1]
+                        return self.board.tolist()
+                    else:
+                        return self.board[1 : -1, 1 : -1].tolist()
+                else:
+                    return self.board[1 : -1, 1 : -1].tolist()
+        else:
+            return "This sizes ship"            
         
 
     def set_ships_random(self):
@@ -271,13 +303,25 @@ class Ship_Board():
 
         # get board ready to play
         self.board = self.board[1 : -1, 1 : -1]
- 
-        return self.board
+        return self.board.tolist()
 
 
 def main():
     board = Ship_Board()
-    print(board.set_ships_random())
     
+    # print(board.set_ships_random())
+
+    board.deleting_board()
+    k = 0
+    while k<5:
+
+        row = np.random.choice(range(1, 11))
+        column = np.random.choice(range(1, 11))
+        ship_size = 3
+        direction = 1
+        print(board.set_ship_with_hand(row, column, direction, ship_size))
+        k+=1
+
+
 if __name__ == '__main__':
     main()
