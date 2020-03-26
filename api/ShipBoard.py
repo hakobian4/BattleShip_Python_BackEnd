@@ -5,7 +5,8 @@ import numpy as np
 class Ship_Board():
     def __init__(self):
         self.board = None
-        self.ships_count = [4, 3, 2, 1]
+        self.ships_count = None
+        self.ships_cord = None
 
     def set_ships_board(self, row, col, direction, ship_size):
         """
@@ -13,20 +14,48 @@ class Ship_Board():
         """
 
         if direction == 1:
+            cord_list = []
             for i in range(row - ship_size + 1, row + 1):
                 self.board[i][col] = ship_size
+                cord = []
+                cord.append(i)
+                cord.append(col)
+                cord_list.append(cord)
+                
+            self.ships_cord[ship_size - 1].append(cord_list)
         
         elif direction == 2:
+            cord_list = []
             for j in range(col, col + ship_size):  
                 self.board[row][j] = ship_size
+                cord = []
+                cord.append(row)
+                cord.append(j)
+                cord_list.append(cord)
+                
+            self.ships_cord[ship_size - 1].append(cord_list)
         
         elif direction == 3:
+            cord_list = []
             for i in range(row, row + ship_size):
                 self.board[i][col] = ship_size
+                cord = []
+                cord.append(i)
+                cord.append(col)
+                cord_list.append(cord)
+                
+            self.ships_cord[ship_size - 1].append(cord_list)
 
         else:
+            cord_list = []
             for j in range(col - ship_size +1, col + 1):  
                 self.board[row][j] = ship_size
+                cord = []
+                cord.append(row)
+                cord.append(j)
+                cord_list.append(cord)
+                
+            self.ships_cord[ship_size - 1].append(cord_list)
         
 
     def set_single_ships(self, row, col):
@@ -42,7 +71,11 @@ class Ship_Board():
                     empty = False
                     break
         if empty:
+            cord = []
             self.board[row][col] = 1
+            cord.append(row)
+            cord.append(col)
+            self.ships_cord[0].append(cord)
             return 1
 
 
@@ -203,6 +236,7 @@ class Ship_Board():
     def deleting_board(self):
         self.board = np.zeros([12, 12])
         self.ships_count = [4, 3, 2, 1]
+        self.ships_cord = [[], [], [], []]
         return self.board[1 : -1, 1 : -1].tolist()
 
 
@@ -212,22 +246,76 @@ class Ship_Board():
         """ 
         if self.ships_count[ship_size - 1] > 0:
             if ship_size == 1:
-                self.set_single_ships(row, col)
+                result = self.set_single_ships(row, col)
+                if result == 1:
+                    self.ships_count[ship_size - 1] -= 1
+                    return "trvac cordinatum navy drvac e"
             else:
                 directions = self.get_available_directions(row, col, ship_size)
                 if direction in directions:
                     self.set_ships_board(row, col, direction, ship_size)
                     self.ships_count[ship_size - 1] -= 1
-                    if (self.ships_count[0] == 0) and (self.ships_count[1] == 0) and (self.ships_count[2] == 0) and (self.ships_count[3] == 0):
-                        self.board = self.board[1 : -1, 1 : -1]
-                        return self.board.tolist()
-                    else:
-                        return self.board[1 : -1, 1 : -1].tolist()
+                    return "trvac cordinatum, trvac uxxutyamb navy drvac e"
                 else:
-                    return self.board[1 : -1, 1 : -1].tolist()
+                    return "trvac cordinatum hnaravor che dnel trvac uxxutyamb nav"
         else:
-            return "This sizes ship"            
+            return "This size ships are sets"            
+    
+
+    def checking_ships_fight(self, row, col):
+        """
+        """
+        bang = True
+        if self.board[row][col] in [1, 2, 3, 4]:
+            ship_size_number = self.board[row][col]
+            self.board[row][col] = -ship_size_number
+            for i in range(row - 1, row + 2):
+                for j in range(col - 1, col + 2):
+                    if self.board[i][j] == ship_size_number:
+                        bang = False
+                        return "kpav"
+            if bang:
+                self.remove_cord(row, col, ship_size_number)
+            return "traqecccc"
+        else:
+            if self.board[row][col] == 0: 
+                self.board[row][col] = 8
+            return "vripec"
+                
+
+    def remove_cord(self, row, col, ship_size_number):
         
+        if ship_size_number == 1:
+            for i in range(row - 1, row +2):
+                for j in range(col - 1, col + 2):
+                    if self.board[i][j] != -1:
+                        self.board[i][j] = 8
+            self.ships_cord[0].remove([row, col])
+        else:
+            cords = None
+            for ship in self.ships_cord[int(ship_size_number) - 1]:
+                for i in range(len(ship)):
+                    if (ship[i][0] == row) and (ship[i][1] == col):
+                        cords = ship
+                        break
+
+                if cords != None:
+                    break
+            for i in range(cords[0][0] - 1, cords[len(cords) - 1][0] + 2):
+                for j in range(cords[0][1] - 1, cords[len(cords) - 1][1] + 2):
+                    if self.board[i][j] != -ship_size_number:
+                        self.board[i][j] = 8
+            self.ships_cord[int(ship_size_number) - 1].remove(cords)
+    
+    def check_win_or_lose(self):
+        win = True
+        for ships in self.ships_cord:
+            if len(self.ships_cord[ships]) != 0:
+                win = False
+                break
+        if win:
+            return "win"
+                
 
     def set_ships_random(self):
         """
@@ -236,6 +324,8 @@ class Ship_Board():
 
         # create board
         self.board = np.zeros([12, 12])
+        self.ships_count = [0, 0, 0, 0]
+        self.ships_cord = [[], [], [], []]
 
         # generate random row and column for 4 valued ship
         row = np.random.choice(range(1, 11))
@@ -247,11 +337,11 @@ class Ship_Board():
 
         # set 4 vlued ship on the board
         self.set_ships_board(row, column, direction, ship_size)
+        self.ships_count[ship_size - 1] += 1
 
 
         ship_size = 3
-        ships_count = 0
-        while ships_count < 2:
+        while self.ships_count[ship_size - 1] < 2:
 
             # generate random rows and columns for 3 valued ships
             row = np.random.choice(range(1, 11))
@@ -266,12 +356,11 @@ class Ship_Board():
             if len(directions) != 0:
                 direction = np.random.choice(directions)
                 self.set_ships_board(row, column, direction, ship_size)
-                ships_count += 1
+                self.ships_count[ship_size - 1] += 1
 
 
         ship_size = 2
-        ships_count = 0
-        while ships_count < 3:
+        while self.ships_count[ship_size - 1] < 3:
 
             # generate random rows and columns for 2 valued ships
             row = np.random.choice(range(1, 11))
@@ -285,11 +374,10 @@ class Ship_Board():
             if len(directions) != 0:
                 direction = np.random.choice(directions)
                 self.set_ships_board(row, column, direction, ship_size)
-                ships_count += 1
+                self.ships_count[ship_size - 1] += 1
 
         ship_size = 1
-        ships_count = 0
-        while ships_count < 4:
+        while self.ships_count[ship_size - 1] < 4:
 
             # generate random rows and columns for 1 valued ships
             row = np.random.choice(range(1, 11))
@@ -299,29 +387,40 @@ class Ship_Board():
             result = self.set_single_ships(row, column)
 
             if result == 1:
-                ships_count += 1
+                self.ships_count[ship_size - 1] += 1
 
         # get board ready to play
-        self.board = self.board[1 : -1, 1 : -1]
-        return self.board.tolist()
+        #self.board = self.board[1 : -1, 1 : -1]
+        print(self.ships_cord)
+        return self.board[1 : -1, 1 : -1].tolist()
 
 
 def main():
     board = Ship_Board()
     
-    # print(board.set_ships_random())
+    print(board.set_ships_random())
+    a = int(1)
+    b = int(1)
+    board.checking_ships_fight(a, b)
+    
+    print(board.board[1 : -1, 1 : -1])
 
-    board.deleting_board()
-    k = 0
-    while k<5:
 
-        row = np.random.choice(range(1, 11))
-        column = np.random.choice(range(1, 11))
-        ship_size = 3
-        direction = 1
-        print(board.set_ship_with_hand(row, column, direction, ship_size))
-        k+=1
+    # board.deleting_board()
+    # k = 0
+    # while k<9:
 
+    #     row = np.random.choice(range(1, 11))
+    #     column = np.random.choice(range(1, 11))
+    #     ship_size = 2
+    #     direction = 1
+    #     print(board.set_ship_with_hand(row, column, direction, ship_size))
+    #     k+=1
+    # print(board.ships_cord)
+    # print(board.ships_count)
+    # board.checking_ships_fight(5, 8)
+    # board.checking_ships_fight(6, 8)
+    # print(board.board[1 :-1, 1:-1])
 
 if __name__ == '__main__':
     main()

@@ -48,7 +48,7 @@ def set_board_menual():
             return json.dumps({"player" : response['player'], "ships_count" : game.player2.board.ships_count, "board" : game.player2.board.set_ship_with_hand(row, column, direction, ship_size)})
 
 
-@app.route('/api/v1/battleship/player/registr', method = ['POST'])
+@app.route('/api/v1/battleship/player/registr', methods = ['POST'])
 def registr_player():
 
     response = request.get_json()
@@ -59,6 +59,30 @@ def registr_player():
 
     game.registration(response['player1'], response['player2'])
     return "Players are registred"
+
+
+@app.route('/api/v1/battleship/player/fight', methods = ['PUT'])
+def fight_players():
+    response = request.get_json()
+    if ((response['row'] < 1) or (response['row'] > 10) or (response['column'] < 1) or (response['column'] > 10)):
+        return "invalit parameters"
+    else:
+        row = response['row'] 
+        column = response['column']
+        if response['player'] == game.player1.name:
+            return json.dumps({"player" : response['player'], "board" : game.player2.board.checking_ships_fight(row, column)})
+        else:
+            return json.dumps({"player" : response['player'], "board" : game.player1.board.checking_ships_fight(row, column)})
+
+
+@app.route('/api/v1/battleship/player/checkwinner', methods = ["GET"])
+def check_winner():
+    if game.player1.board.check_win_or_lose() == "win":
+        return json.dumps({"player" :  game.player1.name, "result" : "winner"})
+    elif  game.player2.board.check_win_or_lose() == "win":
+        return json.dumps({"player" :  game.player2.name, "result" : "winner"})
+    else:
+        return "The Game is Continue"
 
 if __name__ == '__main__':
     app.run()
