@@ -233,7 +233,11 @@ class Ship_Board():
         return directions
 
 
-    def deleting_board(self):
+    def clean_board(self):
+        """
+            This method cleans the board.
+        """
+
         self.board = np.zeros([12, 12])
         self.ships_count = [4, 3, 2, 1]
         self.ships_cord = [[], [], [], []]
@@ -242,28 +246,28 @@ class Ship_Board():
 
     def set_ship_with_hand(self, row, col, direction, ship_size):
         """
-        Ads
+            This metod sets ships on board menually.
         """ 
         if self.ships_count[ship_size - 1] > 0:
             if ship_size == 1:
-                result = self.set_single_ships(row, col)
-                if result == 1:
-                    self.ships_count[ship_size - 1] -= 1
-                    return "trvac cordinatum navy drvac e"
+                if self.set_single_ships(row, col):
+                    return "The ship is set on the board."
+                else:
+                    return "The ship can not be set on the board on the given position."
             else:
                 directions = self.get_available_directions(row, col, ship_size)
                 if direction in directions:
                     self.set_ships_board(row, col, direction, ship_size)
-                    self.ships_count[ship_size - 1] -= 1
-                    return "trvac cordinatum, trvac uxxutyamb navy drvac e"
+                    return "The ship is set from the given position on the board."
                 else:
-                    return "trvac cordinatum hnaravor che dnel trvac uxxutyamb nav"
+                    return "The ship can not be set by the given direction on the board on the given position."
         else:
-            return "This size ships are sets"            
+            return "This ship with the given size is already set."            
     
 
     def checking_ships_fight(self, row, col):
         """
+            This method globally globally provides information about board current status.
         """
         bang = True
         if self.board[row][col] in [1, 2, 3, 4]:
@@ -273,18 +277,25 @@ class Ship_Board():
                 for j in range(col - 1, col + 2):
                     if self.board[i][j] == ship_size_number:
                         bang = False
-                        return "kpav"
+                        return "You shoot it."
             if bang:
                 self.remove_cord(row, col, ship_size_number)
-            return "traqecccc"
-        else:
-            if self.board[row][col] == 0: 
-                self.board[row][col] = 8
-            return "vripec"
+                if self.check_win_or_lose() == 1:
+                    return "Tadaaam!!! You are Winner..."
+                else:
+                    return "!!!Bang!!!"
+        elif self.board[row][col] == 0:
+            self.board[row][col] = 8
+            return "You miss the ship."
+        else: 
+            return "You have already shoot the ship."
                 
 
     def remove_cord(self, row, col, ship_size_number):
-        
+        """
+            This method removes shot ship from all ships(self.ships_cord).
+        """
+
         if ship_size_number == 1:
             for i in range(row - 1, row +2):
                 for j in range(col - 1, col + 2):
@@ -308,13 +319,19 @@ class Ship_Board():
             self.ships_cord[int(ship_size_number) - 1].remove(cords)
     
     def check_win_or_lose(self):
+        """
+            This method identifies the winner.
+        """
+
         win = True
         for ships in self.ships_cord:
-            if len(self.ships_cord[ships]) != 0:
+            if len(ships) != 0:
                 win = False
                 break
         if win:
-            return "win"
+            return 1
+        else:
+            return 0
                 
 
     def set_ships_random(self):
@@ -397,30 +414,8 @@ class Ship_Board():
 
 def main():
     board = Ship_Board()
-    
     print(board.set_ships_random())
-    a = int(1)
-    b = int(1)
-    board.checking_ships_fight(a, b)
-    
-    print(board.board[1 : -1, 1 : -1])
 
-
-    # board.deleting_board()
-    # k = 0
-    # while k<9:
-
-    #     row = np.random.choice(range(1, 11))
-    #     column = np.random.choice(range(1, 11))
-    #     ship_size = 2
-    #     direction = 1
-    #     print(board.set_ship_with_hand(row, column, direction, ship_size))
-    #     k+=1
-    # print(board.ships_cord)
-    # print(board.ships_count)
-    # board.checking_ships_fight(5, 8)
-    # board.checking_ships_fight(6, 8)
-    # print(board.board[1 :-1, 1:-1])
 
 if __name__ == '__main__':
     main()
